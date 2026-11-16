@@ -26,7 +26,7 @@
   <span class="hint-icon">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 16v-5M12 8h.01"/></svg>
   </span>
-  <span>Pilih foto · ketuk atau geser untuk ambil warna</span>
+  <span>Ketuk gambar untuk ambil warna · tahan untuk mode presisi</span>
 </div>
 
 <div class="content">
@@ -42,14 +42,23 @@
 
   <div class="editor" id="editor" hidden>
 
+    <div class="sticky-bar">
+      <div class="sticky-swatch" id="stickySwatch"></div>
+      <div class="sticky-hex" id="stickyHex">#------</div>
+      <button class="copy-btn" id="stickyCopy">Salin</button>
+    </div>
+
     <div class="preview-wrap">
       <div class="stage-outer">
         <div class="canvas-wrap" id="canvasWrap">
           <canvas id="canvas"></canvas>
           <div id="marker"></div>
+          <div id="loupe"><canvas id="loupeCanvas" width="104" height="104"></canvas></div>
         </div>
       </div>
     </div>
+
+    <button class="ghost-btn" id="changePhotoBtn">Ganti Foto</button>
 
     <div class="prop-block">
       <div class="picked">
@@ -77,7 +86,6 @@
       <div class="hist-empty" id="histEmpty">Belum ada.</div>
     </div>
 
-    <button class="ghost-btn" id="changePhotoBtn">Ganti Foto</button>
   </div>
 
 </div>

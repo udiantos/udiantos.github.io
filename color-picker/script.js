@@ -30,6 +30,8 @@
     $('vHex').textContent = h;
     $('vRgb').textContent = `rgb(${r}, ${g}, ${b})`;
     $('vHsl').textContent = hsl(r,g,b);
+    $('stickySwatch').style.background = h;
+    $('stickyHex').textContent = h;
     if (save) addHistory(h);
   }
 
@@ -55,21 +57,70 @@
   }
 
   // ---- Ambil piksel dari kanvas ----
-  function pick(e, save){
+  const loupe = $('loupe'), lc = $('loupeCanvas'), lctx = lc.getContext('2d');
+  lctx.imageSmoothingEnabled = false;
+  const SRC = 13; // jumlah piksel asli yang dibesarkan di kaca pembesar
+
+  function locate(e){
     const rect = canvas.getBoundingClientRect();
     const px = Math.min(Math.max(e.clientX - rect.left, 0), rect.width - 1);
     const py = Math.min(Math.max(e.clientY - rect.top, 0), rect.height - 1);
-    const x = Math.floor(px / rect.width * canvas.width);
-    const y = Math.floor(py / rect.height * canvas.height);
-    const d = ctx.getImageData(x, y, 1, 1).data;
-    marker.style.left = px + 'px'; marker.style.top = py + 'px'; marker.style.display = 'block';
-    show(d[0], d[1], d[2], save);
+    return { px, py, x: Math.floor(px / rect.width * canvas.width), y: Math.floor(py / rect.height * canvas.height) };
   }
-  let dragging = false;
-  wrap.addEventListener('pointerdown', e => { dragging = true; wrap.setPointerCapture(e.pointerId); pick(e, false); });
-  wrap.addEventListener('pointermove', e => { if (dragging) pick(e, false); });
-  wrap.addEventListener('pointerup', e => { dragging = false; pick(e, true); });
-  wrap.addEventListener('pointercancel', () => { dragging = false; });
+  function pick(e, save, withLoupe){
+    const p = locate(e);
+    const d = ctx.getImageData(p.x, p.y, 1, 1).data;
+    show(d[0], d[1], d[2], save);
+    if (withLoupe){
+      marker.style.display = 'none';
+      lctx.clearRect(0, 0, lc.width, lc.height);
+      const half = (SRC - 1) / 2;
+      lctx.drawImage(canvas, p.x - half, p.y - half, SRC, SRC, 0, 0, lc.width, lc.height);
+      const cell = lc.width / SRC;
+      lctx.lineWidth = 2; lctx.strokeStyle = '#fff'; lctx.strokeRect(half * cell, half * cell, cell, cell);
+      lctx.lineWidth = 1; lctx.strokeStyle = '#000'; lctx.strokeRect(half * cell - 1, half * cell - 1, cell + 2, cell + 2);
+      loupe.style.left = p.px + 'px';
+      loupe.style.top = (p.py < 110 ? p.py + 80 : p.py - 80) + 'px';
+      loupe.style.display = 'block';
+    } else {
+      loupe.style.display = 'none';
+      marker.style.left = p.px + 'px'; marker.style.top = p.py + 'px'; marker.style.display = 'block';
+    }
+  }
+
+  // Ketuk = pilih warna. Geser = scroll halaman. Tahan ~0,3 dtk = mode presisi (kaca pembesar).
+  const HOLD_MS = 300, SLOP = 8;
+  let holdTimer = null, precision = false, moved = false, sx = 0, sy = 0;
+
+  wrap.addEventListener('pointerdown', e => {
+    if (e.pointerType === 'mouse'){ if (e.button !== 0) return; precision = true; wrap.setPointerCapture(e.pointerId); pick(e, false, false); return; }
+    sx = e.clientX; sy = e.clientY; moved = false; precision = false;
+    clearTimeout(holdTimer);
+    holdTimer = setTimeout(() => {
+      precision = true;
+      try { wrap.setPointerCapture(e.pointerId); } catch(_) {}
+      if (navigator.vibrate) navigator.vibrate(15);
+      pick({ clientX: sx, clientY: sy }, false, true);
+    }, HOLD_MS);
+  });
+  wrap.addEventListener('pointermove', e => {
+    if (e.pointerType === 'mouse'){ if (precision) pick(e, false, false); return; }
+    if (precision){ sx = e.clientX; sy = e.clientY; pick(e, false, true); return; }
+    if (Math.hypot(e.clientX - sx, e.clientY - sy) > SLOP){ moved = true; clearTimeout(holdTimer); }
+  });
+  wrap.addEventListener('pointerup', e => {
+    clearTimeout(holdTimer);
+    if (e.pointerType === 'mouse'){ if (precision){ precision = false; pick(e, true, false); } return; }
+    if (precision){ precision = false; pick(e, true, false); }
+    else if (!moved) pick(e, true, false);
+  });
+  wrap.addEventListener('pointercancel', () => {
+    clearTimeout(holdTimer);
+    if (precision){ precision = false; loupe.style.display = 'none'; }
+  });
+  // Saat mode presisi, cegah halaman ikut ter-scroll
+  wrap.addEventListener('touchmove', e => { if (precision && e.cancelable) e.preventDefault(); }, { passive: false });
+  wrap.addEventListener('contextmenu', e => e.preventDefault());
 
   // ---- Palet dominan: kuantisasi 4-bit per kanal, lalu pilih yang berjauhan ----
   function dominant(n){
@@ -112,7 +163,8 @@
     try { document.execCommand('copy'); done(); } catch(e) { toast('Gagal menyalin'); }
     document.body.removeChild(t);
   }
-  document.querySelectorAll('.copy-btn').forEach(b =>
+  $('stickyCopy').addEventListener('click', () => copy($('vHex').textContent));
+  document.querySelectorAll('.copy-btn[data-copy]').forEach(b =>
     b.addEventListener('click', () => copy($(b.dataset.copy).textContent)));
 
   // ---- Muat foto ----
