@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Color Picker — Mini Tools</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="topbar">
+  <a class="back-btn" href="/" aria-label="Kembali ke daftar tools">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+  </a>
+  <div class="topbar-brand">
+    <div class="topbar-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4l6 6"/><path d="M16 6L7 15l-2 5 5-2 9-9"/></svg>
+    </div>
+    COLOR PICKER
+  </div>
+</div>
+
+<div class="hint-bar">
+  <span class="hint-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 16v-5M12 8h.01"/></svg>
+  </span>
+  <span>Pilih foto · ketuk atau geser untuk ambil warna</span>
+</div>
+
+<div class="content">
+
+  <div class="dropzone" id="dropzone">
+    <div class="dropzone-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+    </div>
+    <div class="dropzone-title">Ketuk untuk pilih foto</div>
+    <div class="dropzone-sub">atau tarik &amp; lepas di sini</div>
+    <input type="file" id="fileInput" accept="image/*" hidden>
+  </div>
+
+  <div class="editor" id="editor" hidden>
+
+    <div class="preview-wrap">
+      <div class="stage-outer">
+        <div class="canvas-wrap" id="canvasWrap">
+          <canvas id="canvas"></canvas>
+          <div id="marker"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="prop-block">
+      <div class="picked">
+        <div class="picked-swatch" id="pickedSwatch"></div>
+        <div>
+          <div class="picked-name" id="pickedName">#------</div>
+          <div class="picked-sub">Warna terpilih</div>
+        </div>
+      </div>
+      <div class="code-row"><div class="code-key">HEX</div><div class="code-val" id="vHex"></div><button class="copy-btn" data-copy="vHex">Salin</button></div>
+      <div class="code-row"><div class="code-key">RGB</div><div class="code-val" id="vRgb"></div><button class="copy-btn" data-copy="vRgb">Salin</button></div>
+      <div class="code-row"><div class="code-key">HSL</div><div class="code-val" id="vHsl"></div><button class="copy-btn" data-copy="vHsl">Salin</button></div>
+    </div>
+
+    <div class="prop-block">
+      <div class="section-label">Palet Otomatis</div>
+      <div class="section-label-row">Warna dominan di foto · ketuk untuk memilih</div>
+      <div class="palette" id="palette"></div>
+    </div>
+
+    <div class="prop-block">
+      <div class="section-label">Riwayat</div>
+      <div class="section-label-row">Warna yang pernah kamu ambil di sesi ini</div>
+      <div class="palette" id="history"></div>
+      <div class="hist-empty" id="histEmpty">Belum ada.</div>
+    </div>
+
+    <button class="ghost-btn" id="changePhotoBtn">Ganti Foto</button>
+  </div>
+
+</div>
+
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+  <span id="toastMsg">Disalin</span>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
